@@ -1,0 +1,443 @@
+---
+title: "Statistical Analysis of Developer's Survey"
+output:
+  word_document:
+  html_document:default
+    df_print: paged
+---
+
+Installing Required Packages
+```{r}
+required_packages <- c('tidyverse', 'ggplot2', 'mosaic', 'kableExtra', 'ggpmisc', 'bootstrap')
+for (p in required_packages) {
+  if(!require(p,character.only = TRUE)) {
+    install.packages(p, dep = TRUE)
+  }
+}
+
+```
+
+Reading Data
+```{r}
+developer_survey<- read_csv("/Users/shuaibismail/Documents copy/803/final project/survey_results_public.csv", show_col_types = FALSE)
+
+head(developer_survey)
+```
+
+
+Exploratory Data Analysis
+```{r}
+developer_survey<- as_tibble(developer_survey)
+```
+
+
+```{r}
+developer_survey<- developer_survey%>%
+  filter(Country == "United States")
+```
+
+
+```{r}
+xtabs(~Gender,data=developer_survey)
+```
+```{r}
+prop.table(table(developer_survey$Gender))
+```
+
+
+```{r}
+prop.table(table(developer_survey$UndergradMajor))
+```
+
+
+```{r}
+prop.table(table(developer_survey$FormalEducation))
+```
+
+
+```{r}
+prop.table(table(developer_survey$YearsCodingProf))
+```
+
+
+```{r}
+YearsCodingProf<- developer_survey$YearsCodingProf%>%
+  mutate(CodingExperience = recode_factor(YearsCodingProf, `1` = "0-2 years",`2` = "3-5 years", `3` ="6-8 years", `4` = "9-11 years", `5` = "12-14 years", `6` = "15-17 years", `7` = "18-20 years", `8` = "21-23 years", `9` = "24-26 years", `3` = "27-29 years", `5` = "30 or more years"))
+```
+
+
+```{r}
+table(developer_survey$ConvertedSalary, developer_survey$YearsCodingProf)
+```
+
+
+```{r}
+table(developer_survey$UndergradMajor, developer_survey$Gender)
+```
+
+
+```{r}
+summary(developer_survey)
+```
+
+
+```{r}
+favstats(~ConvertedSalary,data=developer_survey)
+```
+Population Mean for Salary = 154413.1	and median is 100,000
+
+```{r}
+summary(developer_survey$FormalEducation)
+```
+
+Proportionate Stratified Sampling
+```{r}
+set.seed(123)
+Masters_samp<- developer_survey%>%
+  filter(FormalEducation=="Master’s degree (MA, MS, M.Eng., MBA, etc.)")%>%
+  select(FormalEducation)%>%
+  sample_frac(0.4)
+  
+Masters_samp
+```
+
+
+```{r}
+set.seed(123)
+Bachelor_samp<- developer_survey%>%
+  filter(FormalEducation=="Bachelor’s degree (BA, BS, B.Eng., etc.)")%>%
+  select(FormalEducation)%>%
+  sample_frac(0.6)
+
+Bachelor_samp
+```
+
+
+```{r}
+set.seed(123)
+Secondary_samp<- developer_survey%>%
+  filter(FormalEducation=="Secondary school (e.g. American high school, German Realschule or Gymnasium, etc.)")%>%
+  select(FormalEducation)%>%
+  sample_frac(0.2)
+
+Associate_samp<- developer_survey%>%
+  filter(FormalEducation=="Associate degree")%>%
+  select(FormalEducation)%>%
+  sample_frac(0.2)
+
+
+doctoral_samp<- developer_survey%>%
+  filter(FormalEducation=="Other doctoral degree (Ph.D, Ed.D., etc.)")%>%
+  select(FormalEducation)%>%
+  sample_frac(0.1)
+
+
+Some_college_samp<- developer_survey%>%
+  filter(FormalEducation=="Some college/university study without earning a degree")%>%
+  select(FormalEducation)%>%
+  sample_frac(0.2)
+
+
+Primary_samp<- developer_survey%>%
+  filter(FormalEducation=="Primary/elementary school")%>%
+  select(FormalEducation)%>%
+  sample_frac(0.1)
+
+
+Professional_samp<- developer_survey%>%
+  filter(FormalEducation=="Professional degree (JD, MD, etc.)")%>%
+  select(FormalEducation)%>%
+  sample_frac(0.1)
+
+
+No_education_samp<- developer_survey%>%
+  filter(FormalEducation=="I never completed any formal education")%>%
+  select(FormalEducation)%>%
+  sample_frac(0.1)
+
+Education_samp<- rbind(No_education_samp, Professional_samp, Primary_samp, Some_college_samp,doctoral_samp, Associate_samp, Secondary_samp, Bachelor_samp, Masters_samp)
+                                       
+Education_samp                                
+                            
+```
+
+
+Salary Sampling
+```{r}
+set.seed(123)
+MastersSalary_samp<- developer_survey%>%
+  filter(FormalEducation=="Master’s degree (MA, MS, M.Eng., MBA, etc.)")%>%
+  select(ConvertedSalary)%>%
+  sample_frac(0.4)
+
+BacheloSalary_samp<- developer_survey%>%
+  filter(FormalEducation=="Bachelor’s degree (BA, BS, B.Eng., etc.)")%>%
+  select(ConvertedSalary)%>%
+  sample_frac(0.4)
+
+set.seed(123)
+SecondarySalary_samp<- developer_survey%>%
+  filter(FormalEducation=="Secondary school (e.g. American high school, German Realschule or Gymnasium, etc.)")%>%
+  select(ConvertedSalary)%>%
+  sample_frac(0.2)
+
+AssociateSalary_samp<- developer_survey%>%
+  filter(FormalEducation=="Associate degree")%>%
+  select(ConvertedSalary)%>%
+  sample_frac(0.2)
+
+
+doctoralSalary_samp<- developer_survey%>%
+  filter(FormalEducation=="Other doctoral degree (Ph.D, Ed.D., etc.)")%>%
+  select(ConvertedSalary)%>%
+  sample_frac(0.1)
+
+
+Some_collegeSalary_samp<- developer_survey%>%
+  filter(FormalEducation=="Some college/university study without earning a degree")%>%
+  select(ConvertedSalary)%>%
+  sample_frac(0.2)
+
+
+PrimarySalary_samp<- developer_survey%>%
+  filter(FormalEducation=="Primary/elementary school")%>%
+  select(ConvertedSalary)%>%
+  sample_frac(0.1)
+
+
+ProfessionalSalary_samp<- developer_survey%>%
+  filter(FormalEducation=="Professional degree (JD, MD, etc.)")%>%
+  select(ConvertedSalary)%>%
+  sample_frac(0.1)
+
+
+No_educationSalary_samp<- developer_survey%>%
+  filter(FormalEducation=="I never completed any formal education")%>%
+  select(ConvertedSalary)%>%
+  sample_frac(0.1)
+
+Salary_samp<- rbind(No_educationSalary_samp, ProfessionalSalary_samp, PrimarySalary_samp, Some_collegeSalary_samp, doctoralSalary_samp, AssociateSalary_samp, SecondarySalary_samp, BacheloSalary_samp, MastersSalary_samp)
+
+Salary_samp
+
+```
+
+
+Descriptive Analysis
+```{r}
+qqnorm(Salary_samp, frame = FALSE)
+qqline(Salary_samp, col = "steelblue", lwd = 2)
+```
+
+
+```{r}
+hist(Salary_samp, xlab="Salary Range", main="Histogram for Salaries of Developers", col="blue", prob=TRUE, breaks=100)
+xfit<-seq(min(s),max(s))
+yfit<-dnorm(xfit,mean(s), sd(s))
+lines(xfit,yfit,col="red", lwd=3)
+```
+
+
+Inferential Analysis
+```{r}
+## Methods of Moments
+n=6689
+MM.mu=sum(Salary_samp)/n
+MM.mu
+
+sigma2.mu=sum((Salary_samp-MM.mu)^2)/n
+sigma2.mu 
+
+## Maxmimum Likelihood Estimation
+MLE.mu=sum(Salary_samp)/n
+MLE.mu
+
+sigmaMLE=sum((Salary_samp-MM.mu)^2)/n
+sigmaMLE
+
+#For Normal Distribution Method of Moment and Maximum Likelihood Estimators are equal.
+```
+
+Jackknife Method
+```{r}
+as.data.frame(Salary_samp)
+data=Salary_samp
+n=6689
+mean.data=mean(data)
+jk=sapply(1:n, 
+          function(i) mean(data[-i])
+)
+mean.jk=mean(jk)
+se.jk=sqrt((n-1)*mean((jk-mean.data)^2))
+list(mean=mean.jk, se=se.jk)
+```
+
+
+95% Confidence Intervals
+```{r}
+Salary_samp
+Norm_CI=function(x, alpha){
+n=6689
+df=n-1
+ME=qt(1-alpha/2, df)*sd(x)/sqrt(n)
+c(Lower=mean(x)-ME, Upper=mean(x)+ME)
+}
+
+Norm_CI(Salary_samp, 0.05)
+
+```
+```{r}
+
+Sigma.CI=function(x,alpha){
+n=length(x)
+df=n-1
+s2=sd(x)^2
+c(Lower=df*s2/qchisq(1-alpha/2, df), Upper=df*s2/qchisq(alpha/2, df))
+}
+
+Sigma.CI(Salary_samp, 0.05)
+```
+
+Hypothesis Test
+```{r}
+test.stat=(mean(Salary_samp)-household_income)/(sqrt(var(Salary_samp)/length(Salary_samp)))
+pval=pnorm(test.stat)
+list(test.stat=test.stat, pval=pval)
+```
+High P-value means little or no emperical evidence against the null hypothesis
+
+1.Low pvalue: strong empirical evidence against h0
+2.High pvalue: little or 'no' empirical evidence against h0
+
+Right Tail Test
+```{r}
+#Right Tail Test
+t.test.right <- function(data, mu0, alpha){
+    t.stat <- (mean(data) - mu0) / (sqrt(var(data) / length(data)))
+    dof <- length(data) - 1
+    t.critical <- qt(1-alpha, df= dof) #Es alpha 0.05 -> 1.64 (df=Inf)
+    p.value <- 1 - pt(t.stat, df= dof)
+    if(t.stat >= t.critical)
+    {
+        print("Reject H0")
+    }
+    else
+    {
+        print("Accept H0")
+    }
+    print('T statistic')
+    print(t.stat)
+    print('T critical value')
+    print(t.critical)
+    print('P value')
+    print(p.value)
+    print("#####################")
+    return(t.stat)
+}
+    t.test.right(Salary_samp, household_income, 0.05)
+```
+
+Regression Analysis
+```{r}
+d=bind_cols(Education_samp, Salary_samp=unlist(Salary_samp))
+
+Education_samp2=sample(Education_samp, 6689, replace = FALSE)
+YearsCodingProf2=sample(developer_survey$YearsCodingProf, 6689, replace = FALSE)
+
+Salary_samp=unlist(Salary_samp)
+
+d <- data.frame(Education_samp2,Salary_samp)
+
+Education_samp=unlist(Education_samp)
+
+model=lm(Salary_samp~Education_samp2, data=d)
+model
+```
+
+
+```{r}
+summary(model)
+```
+
+
+```{r}
+ mlr=lm(Salary_samp~Education_samp2+YearsCodingProf2)
+summary(mlr)
+```
+
+
+```{r}
+qqplot(mlr)
+```
+
+
+```{r}
+household_income=63179
+
+set.seed(123)
+data=Salary_samp
+test_stat=(mean(Salary_samp)-household_income)/sd(Salary_samp)/sqrt(length(Salary_samp))
+pval=pnorm(test_stat)
+list(test_stat=test.stat, pval=pval)
+```
+
+
+```{r}
+data=stratified_sample$HINCP
+test.stat=(mean(data)-80000)/(sd(data)/sqrt(length(stratified_sample$HINCP)))
+
+1-pt(test.stat,length(stratified_sample$HINCP-1))
+```
+
+
+
+
+```{r}
+library(bootstrap)
+temp <- jackknife(data, mean)
+c(temp$jack.bias, temp$jack.se)
+```
+
+
+```{r}
+data=Salary_samp-1
+B=10000
+n=nrow(Salary_samp)
+resample.boot=matrix(sample(data, size = B*n, replace=TRUE), B, n)
+mean.boot=apply(resample.boot, 1, mean)
+se=sd(mean.boot)
+se
+
+```
+
+
+```{r}
+data=Education_samp
+
+ggplot(data.frame(Education_samp), aes(x=Bachelor_samp))+
+  geom_histogram(binwidth=25, aes(y=..density..))+
+  geom_density(color="red")
+```
+
+
+```{r}
+mean.b = function(K, Salary_samp){
+  resamples = lapply(1:K, function(i) sample(data, replace=T))
+  mean.r = sapply(resamples, mean)
+  se.b= sd(mean.r)
+  list(se=se.b, means=mean.r, mean=mean(mean.r))
+                     
+}
+```
+
+Conclusion
+
+Average developer Income is greater than $63136 for selected sample population, as proved using MLE, Confidence Interval and Hypothesis Testing 
+
+Both our simple linear model and multi-linear model show that our independent variable, education level can explain part of our dependent variable, developer income. Yet, neither simple linear nor the multi-linear model is an ideal fit for our sample data. Therefore designed model does not fit developer Income and Education Attainment. 
+
+Our research concerning relationship between education level and developer income is yet waiting for better model fit and more authoritative explanation. 
+
+
+
+
